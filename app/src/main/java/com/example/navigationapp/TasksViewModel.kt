@@ -16,11 +16,7 @@ import kotlinx.coroutines.flow.update
 
 class TasksViewModel : ViewModel() {
 
-    private val _tasks = MutableStateFlow(listOf(
-        Task(0, "Zadanie domowe", "Opis", TaskPriority.HIGH_PRIORITY),
-        Task(1, "Posprzątać", "Opis", TaskPriority.LOW_PRIORITY),
-        Task(2, "Zrobić pranie", "Opis", TaskPriority.MEDIUM_PRIORITY),
-    ))
+    private val _tasks = MutableStateFlow(emptyList<Task>())
     val tasks: StateFlow<List<Task>> get() = _tasks
 
     fun getTask(id: Int): Task {
