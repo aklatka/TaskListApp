@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="Theme.MySplashScreen" parent="Theme.SplashScreen">
+        <item name="android:windowSplashScreenBackground" tools:ignore="NewApi">@color/ic_task_launcher_background</item>
+        <item name="android:windowSplashScreenAnimatedIcon" tools:ignore="NewApi">
+            @drawable/ic_task_launcher_foreground
+        </item>
+        <item name="postSplashScreenTheme">@style/Theme.NavigationApp</item>
+    </style>
+
+    <style name="Theme.NavigationApp" parent="android:Theme.Material.Light.NoActionBar">
+
+    </style>
+</resources>
