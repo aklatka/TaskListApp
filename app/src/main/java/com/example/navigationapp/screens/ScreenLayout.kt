@@ -17,12 +17,16 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import com.example.navigationapp.R
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun ScreenLayout(
@@ -33,6 +37,7 @@ fun ScreenLayout(
     bottomBarButton: @Composable (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
+    val auth = FirebaseAuth.getInstance()
 
     Scaffold(
         modifier = Modifier.fillMaxSize().padding(30.dp),
@@ -73,11 +78,29 @@ fun ScreenLayout(
                             }
                         )
                     }
-                    Text(
-                        title,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 5.em
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            title,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 5.em
+                        )
+                        if(auth.currentUser != null) {
+                            Text(
+                                "Wyloguj Się",
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 4.em,
+                                color = Color(ContextCompat.getColor(LocalContext.current,
+                                    R.color.ic_task_launcher_background)),
+                                modifier = Modifier.clickable {
+                                    auth.signOut()
+                                    navController.navigate(NavigationItem.Auth.route)
+                                }
+                            )
+                        }
+                    }
                 }
                 Spacer(modifier = Modifier.height(30.dp))
                 content()
