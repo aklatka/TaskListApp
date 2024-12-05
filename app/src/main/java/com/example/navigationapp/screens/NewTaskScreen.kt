@@ -34,6 +34,10 @@ import androidx.navigation.NavHostController
 import com.example.navigationapp.R
 import com.example.navigationapp.TaskPriority
 import com.example.navigationapp.TasksViewModel
+import com.example.navigationapp.controls.PrimaryButton
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.database
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
@@ -43,6 +47,9 @@ fun NewTaskScreen(modifier: Modifier, navController: NavHostController, tasksVie
     var taskPriority by remember { mutableStateOf(TaskPriority.LOW_PRIORITY) }
     var valid by remember { mutableStateOf(false) }
 
+    val auth = FirebaseAuth.getInstance()
+    val dbRef = Firebase.database.getReference("users/${auth.currentUser?.uid}/tasks")
+
     fun validate() {
         valid = taskTitle.isNotBlank() && taskDescription.isNotBlank()
     }
@@ -51,22 +58,26 @@ fun NewTaskScreen(modifier: Modifier, navController: NavHostController, tasksVie
         "Nowe Zadanie",
         showBottomBar = true,
         bottomBarButton = {
-            Button(
+            PrimaryButton(
+                "Zapisz",
                 onClick = {
                     if(valid) {
-                        tasksViewModel.addTask(
-                            title = taskTitle,
-                            description = taskDescription,
-                            priority = taskPriority
-                        )
+//                        tasksViewModel.addTask(
+//                            title = taskTitle,
+//                            description = taskDescription,
+//                            priority = taskPriority
+//                        )
+                        dbRef.push().setValue(mapOf(
+                            "title" to taskTitle,
+                            "description" to taskDescription,
+                            "priority" to taskPriority,
+                            "done" to false
+                        ))
                         navController.popBackStack()
                     }
                 },
-                colors = if(valid) ButtonDefaults.buttonColors()
-                else ButtonDefaults.buttonColors(Color.LightGray)
-            ) {
-                Text("Zapisz")
-            }
+                disabled = !valid
+            )
         },
         navController = navController
     ) {

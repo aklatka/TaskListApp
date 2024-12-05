@@ -19,18 +19,18 @@ class TasksViewModel : ViewModel() {
     private val _tasks = MutableStateFlow(emptyList<Task>())
     val tasks: StateFlow<List<Task>> get() = _tasks
 
-    fun getTask(id: Int): Task {
+    fun getTask(id: String): Task {
         return _tasks.value.first { it.id == id }
     }
 
     fun addTask(title: String, description: String, priority: TaskPriority) {
         _tasks.update { currTasks ->
-            val task = Task(_tasks.value.size, title, description, priority)
+            val task = Task("${_tasks.value.size}", title, description, priority)
             currTasks + task
         }
     }
 
-    fun updateTaskStatus(id: Int, done: Boolean) {
+    fun updateTaskStatus(id: String, done: Boolean) {
         _tasks.update { currTasks ->
             currTasks.map { if(it.id == id) it.copy(done = done) else it }
         }

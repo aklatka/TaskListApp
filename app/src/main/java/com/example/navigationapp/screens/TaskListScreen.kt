@@ -10,14 +10,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,16 +28,48 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.NavOptions
 import com.example.navigationapp.R
 import com.example.navigationapp.Task
+import com.example.navigationapp.TaskPriority
 import com.example.navigationapp.TasksViewModel
+import com.example.navigationapp.controls.PrimaryButton
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.database
 
+@SuppressLint("MutableCollectionMutableState")
 @Composable
 fun TaskListScreen(modifier: Modifier, navController: NavHostController, tasksViewModel: TasksViewModel = viewModel()) {
-    val tasks by tasksViewModel.tasks.collectAsState()
+    var tasks by remember { mutableStateOf(arrayListOf<Task>()) }
+    val auth = FirebaseAuth.getInstance()
+    val dbRef = Firebase.database.getReference("users/${auth.currentUser?.uid}/tasks")
 
-    fun openTask(id: Int) {
+    dbRef.addValueEventListener(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            val tmpTasks = arrayListOf<Task>()
+            for(snap in snapshot.children) {
+                val data = snap.value as Map<*, *>
+
+                tmpTasks.add(Task(
+                    id = snap.key as String,
+                    title = data["title"] as String,
+                    description = data["description"] as String,
+                    priority = TaskPriority.valueOf(data["priority"] as String),
+                    done = (data["done"] ?: false) as Boolean
+                ))
+            }
+            tasks = tmpTasks
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+
+        }
+    })
+
+    fun openTask(id: String) {
         navController.navigate("${NavigationItem.Task.route}/${id}")
     }
 
@@ -47,11 +78,10 @@ fun TaskListScreen(modifier: Modifier, navController: NavHostController, tasksVi
         showBottomBar = true,
         showBackArrow = false,
         bottomBarButton = {
-            Button(
+            PrimaryButton(
+                "Dodaj + ",
                 onClick = {navController.navigate(NavigationItem.NewTask.route)}
-            ) {
-                Text("Dodaj +")
-            }
+            )
         },
         navController = navController
     ) {
@@ -64,7 +94,7 @@ fun TaskListScreen(modifier: Modifier, navController: NavHostController, tasksVi
             verticalArrangement = Arrangement.spacedBy(3.dp)
         ) {
             for(task in tasks.filter { t -> !t.done }) {
-                TaskItem(task, tasksViewModel, onClick = {openTask(it)})
+                TaskItem(task, onClick = {openTask(task.id)})
             }
         }
         Spacer(modifier = Modifier.height(50.dp))
@@ -77,7 +107,7 @@ fun TaskListScreen(modifier: Modifier, navController: NavHostController, tasksVi
             verticalArrangement = Arrangement.spacedBy(3.dp)
         ) {
             for(task in tasks.filter { t -> t.done }) {
-                TaskItem(task, tasksViewModel, onClick = {openTask(it)})
+                TaskItem(task, onClick = {openTask(task.id)})
             }
         }
     }
@@ -86,12 +116,14 @@ fun TaskListScreen(modifier: Modifier, navController: NavHostController, tasksVi
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
-fun TaskItem(task: Task, tasksViewModel: TasksViewModel = viewModel(), onClick: (id: Int) -> Unit) {
+fun TaskItem(task: Task, onClick: (id: String) -> Unit) {
     var done by mutableStateOf(task.done)
+    val auth = FirebaseAuth.getInstance()
+    val dbRef = Firebase.database.getReference("users/${auth.currentUser?.uid}/tasks/${task.id}")
 
     fun toggleDone() {
         done = !done
-        tasksViewModel.updateTaskStatus(task.id, done)
+        dbRef.child("done").setValue(done)
     }
 
     Surface(modifier = Modifier.clickable {

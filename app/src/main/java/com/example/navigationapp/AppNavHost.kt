@@ -1,7 +1,6 @@
 package com.example.navigationapp
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -9,6 +8,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.navigationapp.screens.AuthScreen
 import com.example.navigationapp.screens.NavigationItem
 import com.example.navigationapp.screens.NewTaskScreen
 import com.example.navigationapp.screens.TaskListScreen
@@ -27,6 +27,9 @@ fun AppNavHost(
         navController = navController,
         startDestination = startDestination
     ) {
+        composable(NavigationItem.Auth.route) {
+            AuthScreen(navController)
+        }
         composable(NavigationItem.TaskList.route) {
             TaskListScreen(modifier, navController, tasksViewModel)
         }
@@ -36,10 +39,10 @@ fun AppNavHost(
         composable(
             "${NavigationItem.Task.route}/{taskId}",
             arguments = listOf(navArgument("taskId") {
-                type = NavType.IntType
+                type = NavType.StringType
             })
         ) { backStackEntry ->
-            val taskId = backStackEntry.arguments?.getInt("taskId")
+            val taskId = backStackEntry.arguments?.getString("taskId")
 
             if(taskId == null) {
                 navController.navigate(NavigationItem.TaskList.route)

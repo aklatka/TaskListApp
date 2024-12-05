@@ -24,6 +24,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.navigationapp.screens.NavigationItem
 import com.example.navigationapp.ui.theme.NavigationAppTheme
+import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : ComponentActivity() {
 
@@ -40,9 +41,12 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun App(navController: NavHostController) {
-        AppNavHost(
-            navController = navController,
-            modifier = Modifier,
-            startDestination = NavigationItem.TaskList.route,
-        )
+    val auth = FirebaseAuth.getInstance()
+
+    AppNavHost(
+        navController = navController,
+        modifier = Modifier,
+        startDestination = if(auth.currentUser != null)
+            NavigationItem.TaskList.route else NavigationItem.Auth.route,
+    )
 }

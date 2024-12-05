@@ -8,7 +8,7 @@ enum class TaskPriority(val iconRes: Int, val displayName: String) {
 }
 
 data class Task(
-    val id: Int,
+    val id: String,
     val title: String,
     val description: String,
     val priority: TaskPriority,
